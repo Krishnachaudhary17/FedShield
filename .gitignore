@@ -24,6 +24,16 @@ env/
 # Results/output files
 results/
 
+# Large data files (too large for GitHub)
+data/raw/
+data/processed/*.npy
+data/processed/*.csv
+data/processed/*.pkl
+data/processed/graphs/*.pt
+data/processed/graphs/*.pkl
+data/processed/clients/*.csv
+data/processed/clients/*.pkl
+
 # OS files
 .DS_Store
 Thumbs.db

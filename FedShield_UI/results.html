@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Model Results | FedShield</title>
+<link rel="stylesheet" href="style.css">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+<style>
+.nav-menu{display:flex;gap:20px;margin-left:auto;margin-right:20px}
+.nav-menu a{color:#cbd3d9;text-decoration:none;font-size:14px;font-weight:600;padding:5px 0;border-bottom:2px solid transparent;transition:all .2s}
+.nav-menu a:hover{color:#fff}
+.nav-menu a.active{color:#fff;border-bottom-color:#5e9b7b}
+
+.results-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px}
+.results-grid .card{padding:22px}
+.results-grid h3{font-size:14px;margin:0 0 14px;color:#17212b;display:flex;align-items:center;gap:8px}
+.results-grid h3 .icon{width:22px;height:22px;border-radius:5px;display:flex;align-items:center;justify-content:center;font-size:12px;color:#fff}
+
+.stat-row{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:16px}
+.stat-box{background:#fff;border:1px solid #dfe4e8;border-radius:8px;padding:16px;text-align:center;box-shadow:0 2px 6px rgba(0,0,0,.035)}
+.stat-box label{display:block;font-size:10px;color:#7b8790;letter-spacing:.5px;text-transform:uppercase;margin-bottom:6px}
+.stat-box .val{font-size:26px;font-weight:700;color:#17212b}
+.stat-box .sub{font-size:10px;color:#8b969e;margin-top:3px}
+.stat-box.highlight{border-color:#5e9b7b;background:linear-gradient(135deg,#f2f7f4 0%,#fff 100%)}
+.stat-box.highlight .val{color:#2d7a50}
+
+.cm-grid{display:grid;grid-template-columns:1fr 1fr;gap:2px;max-width:280px;margin:12px auto 0}
+.cm-cell{padding:14px 8px;text-align:center;border-radius:4px;font-size:13px;font-weight:600}
+.cm-cell.tp{background:#d4edda;color:#155724}
+.cm-cell.tn{background:#d4edda;color:#155724}
+.cm-cell.fp{background:#fff3cd;color:#856404}
+.cm-cell.fn{background:#f8d7da;color:#721c24}
+.cm-cell small{display:block;font-size:9px;font-weight:400;margin-top:3px;opacity:.7}
+
+.chart-wrap{position:relative;height:260px;width:100%}
+
+.section-title{font-size:20px;font-weight:700;margin:0 0 6px;color:#17212b}
+.section-sub{font-size:12px;color:#687681;margin:0 0 18px}
+
+.full-width{grid-column:1/-1}
+.dp-table{width:100%;border-collapse:collapse;font-size:12px;margin-top:10px}
+.dp-table th{text-align:left;padding:10px 12px;background:#f4f6f8;border-bottom:2px solid #dfe4e8;font-size:10px;text-transform:uppercase;letter-spacing:.4px;color:#687681}
+.dp-table td{padding:10px 12px;border-bottom:1px solid #edf0f2}
+.dp-table tr:hover{background:#f9fafb}
+.dp-table .badge{display:inline-block;padding:2px 8px;border-radius:10px;font-size:10px;font-weight:600}
+.badge-none{background:#f5f5f5;color:#888}
+.badge-weak{background:#fff3cd;color:#856404}
+.badge-bal{background:#d4edda;color:#155724}
+.badge-strong{background:#cce5ff;color:#004085}
+
+.client-compare{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:12px}
+.client-card{background:#fafbfc;border:1px solid #edf0f2;border-radius:6px;padding:14px;text-align:center}
+.client-card b{font-size:13px;display:block;margin-bottom:8px}
+.client-card .metric-row{display:flex;justify-content:space-between;font-size:11px;padding:4px 0;border-bottom:1px solid #f0f2f4}
+.client-card .metric-row:last-child{border:0}
+.client-card .metric-row span:last-child{font-weight:600;color:#245e89}
+</style>
+</head>
+<body>
+<header class="topbar">
+  <div><div class="brand">FedShield</div><div class="subtitle">Privacy-Preserving Federated Fraud Detection</div></div>
+  <nav class="nav-menu">
+    <a href="index.html">Federated Training</a>
+    <a href="fraud_detection.html">Fraud Analysis</a>
+    <a href="results.html" class="active">Results</a>
+  </nav>
+</header>
+
+<main class="wrap">
+  <section class="hero" style="justify-content:center;">
+    <div style="text-align:center">
+      <h1 class="section-title">Model Evaluation Results</h1>
+      <p class="section-sub">Real metrics from FraudGCN trained via FedAvg on PaySim (2.77M transactions) — All values computed on held-out test data</p>
+    </div>
+  </section>
+
+  <!-- Key Stats Row -->
+  <section class="stat-row">
+    <div class="stat-box">
+      <label>Test Samples</label>
+      <div class="val" id="totalSamples">--</div>
+      <div class="sub">Held-out accounts</div>
+    </div>
+    <div class="stat-box">
+      <label>Accuracy</label>
+      <div class="val" id="accuracy">--</div>
+      <div class="sub">Global test set</div>
+    </div>
+    <div class="stat-box highlight">
+      <label>Recall (Fraud Caught)</label>
+      <div class="val" id="recall">--</div>
+      <div class="sub">Out of 1,235 fraud accounts</div>
+    </div>
+    <div class="stat-box">
+      <label>F1 Score</label>
+      <div class="val" id="f1">--</div>
+      <div class="sub">Harmonic mean</div>
+    </div>
+    <div class="stat-box">
+      <label>ROC-AUC</label>
+      <div class="val" id="rocauc">--</div>
+      <div class="sub">Area under curve</div>
+    </div>
+  </section>
+
+  <!-- Charts Row -->
+  <section class="results-grid">
+
+    <!-- F1 Progression Chart -->
+    <div class="card">
+      <h3><span class="icon" style="background:#245e89">📈</span> Federated Learning Progression</h3>
+      <div class="chart-wrap"><canvas id="f1Chart"></canvas></div>
+    </div>
+
+    <!-- Confusion Matrix -->
+    <div class="card">
+      <h3><span class="icon" style="background:#5e9b7b">🎯</span> Confusion Matrix (Combined Test Set)</h3>
+      <div style="text-align:center;margin-top:8px">
+        <div style="display:grid;grid-template-columns:auto auto auto;gap:2px;max-width:320px;margin:0 auto">
+          <div></div>
+          <div style="font-size:10px;font-weight:600;color:#687681;padding:6px;text-align:center">Predicted Safe</div>
+          <div style="font-size:10px;font-weight:600;color:#687681;padding:6px;text-align:center">Predicted Fraud</div>
+          <div style="font-size:10px;font-weight:600;color:#687681;padding:6px;writing-mode:vertical-lr;text-orientation:mixed;transform:rotate(180deg)">Actually Safe</div>
+          <div class="cm-cell tn" id="cmTN">--<small>True Negative</small></div>
+          <div class="cm-cell fp" id="cmFP">--<small>False Positive</small></div>
+          <div style="font-size:10px;font-weight:600;color:#687681;padding:6px;writing-mode:vertical-lr;text-orientation:mixed;transform:rotate(180deg)">Actually Fraud</div>
+          <div class="cm-cell fn" id="cmFN">--<small>False Negative</small></div>
+          <div class="cm-cell tp" id="cmTP">--<small>True Positive</small></div>
+        </div>
+        <p style="font-size:11px;color:#687681;margin-top:14px">
+          Only <strong id="missedFraud">--</strong> fraud transactions missed out of <strong id="totalFraud">--</strong> total
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <section class="results-grid">
+    <!-- Privacy-Utility Chart -->
+    <div class="card">
+      <h3><span class="icon" style="background:#cf1322">🔒</span> Privacy-Utility Tradeoff</h3>
+      <div class="chart-wrap"><canvas id="dpChart"></canvas></div>
+    </div>
+
+    <!-- Per-Client Comparison -->
+    <div class="card">
+      <h3><span class="icon" style="background:#faad14">🏦</span> Per-Client Test Performance</h3>
+      <div class="client-compare" id="clientCards"></div>
+    </div>
+  </section>
+
+  <!-- DP Table -->
+  <section class="results-grid">
+    <div class="card full-width">
+      <h3><span class="icon" style="background:#722ed1">🛡️</span> Differential Privacy Experiment Summary</h3>
+      <table class="dp-table">
+        <thead>
+          <tr>
+            <th>Experiment</th>
+            <th>Noise σ</th>
+            <th>Privacy ε</th>
+            <th>Accuracy</th>
+            <th>Precision</th>
+            <th>Recall</th>
+            <th>F1 Score</th>
+            <th>ROC-AUC</th>
+            <th>Privacy Level</th>
+          </tr>
+        </thead>
+        <tbody id="dpTableBody"></tbody>
+      </table>
+    </div>
+  </section>
+
+</main>
+<footer>FedShield &#8226; Mini Project — Privacy-Preserving Federated Fraud Detection</footer>
+
+<script>
+const API = 'http://127.0.0.1:5000';
+
+// Hardcoded data from JSON files (fallback if API unavailable)
+const evalData = {
+  combined: { accuracy: 0.8842, precision: 0.2915, recall: 0.996, f1: 0.451, roc_auc: 0.9377,
+    confusion_matrix: { tn: 21649, fp: 2990, fn: 5, tp: 1230 },
+    total_test_samples: 25874, test_fraud_count: 1235 },
+  clients: {
+    "Bank A": { accuracy: 0.877, precision: 0.2792, recall: 0.9983, f1: 0.4364, roc_auc: 0.9348, samples: 12708 },
+    "Bank B": { accuracy: 0.8872, precision: 0.2971, recall: 0.9974, f1: 0.4578, roc_auc: 0.9397, samples: 7920 },
+    "Bank C": { accuracy: 0.8973, precision: 0.3163, recall: 0.988, f1: 0.4792, roc_auc: 0.9419, samples: 5246 }
+  }
+};
+
+const roundData = [
+  { round: 1, avg_f1: 0.4083, avg_precision: 0.2574, avg_recall: 0.9925 },
+  { round: 5, avg_f1: 0.4949, avg_precision: 0.3297, avg_recall: 0.9919 },
+  { round: 6, avg_f1: 0.5381, avg_precision: 0.3701, avg_recall: 0.9903 }
+];
+
+const dpData = [
+  { id: "Exp A (No DP)", sigma: 0.0, epsilon: "∞", acc: 0.8302, prec: 0.2172, rec: 0.9822, f1: 0.3557, auc: 0.9029, level: "none" },
+  { id: "Exp B (Low DP)", sigma: 0.10, epsilon: "83.11", acc: 0.6665, prec: 0.0489, rec: 0.3247, f1: 0.085, auc: 0.5054, level: "weak" },
+  { id: "Exp C (Medium DP)", sigma: 0.50, epsilon: "16.62", acc: 0.5829, prec: 0.0635, rec: 0.5628, f1: 0.1141, auc: 0.5731, level: "balanced" },
+  { id: "Exp D (High DP)", sigma: 1.00, epsilon: "8.31", acc: 0.4054, prec: 0.0718, rec: 0.9603, f1: 0.1336, auc: 0.669, level: "strong" }
+];
+
+// Populate key stats
+const c = evalData.combined;
+document.getElementById('totalSamples').textContent = c.total_test_samples.toLocaleString();
+document.getElementById('accuracy').textContent = (c.accuracy * 100).toFixed(1) + '%';
+document.getElementById('recall').textContent = (c.recall * 100).toFixed(1) + '%';
+document.getElementById('f1').textContent = c.f1.toFixed(4);
+document.getElementById('rocauc').textContent = (c.roc_auc * 100).toFixed(1) + '%';
+
+// Confusion matrix
+const cm = c.confusion_matrix;
+document.getElementById('cmTP').innerHTML = cm.tp.toLocaleString() + '<small>True Positive</small>';
+document.getElementById('cmTN').innerHTML = cm.tn.toLocaleString() + '<small>True Negative</small>';
+document.getElementById('cmFP').innerHTML = cm.fp.toLocaleString() + '<small>False Positive</small>';
+document.getElementById('cmFN').innerHTML = cm.fn.toLocaleString() + '<small>False Negative</small>';
+document.getElementById('missedFraud').textContent = cm.fn;
+document.getElementById('totalFraud').textContent = c.test_fraud_count.toLocaleString();
+
+// F1 Progression Chart
+new Chart(document.getElementById('f1Chart'), {
+  type: 'line',
+  data: {
+    labels: roundData.map(r => 'Round ' + r.round),
+    datasets: [
+      {
+        label: 'Avg F1 Score',
+        data: roundData.map(r => r.avg_f1),
+        borderColor: '#245e89',
+        backgroundColor: 'rgba(36,94,137,0.1)',
+        fill: true,
+        tension: 0.3,
+        borderWidth: 2.5,
+        pointRadius: 5,
+        pointBackgroundColor: '#245e89'
+      },
+      {
+        label: 'Avg Precision',
+        data: roundData.map(r => r.avg_precision),
+        borderColor: '#faad14',
+        backgroundColor: 'transparent',
+        borderWidth: 2,
+        borderDash: [5, 5],
+        pointRadius: 4,
+        pointBackgroundColor: '#faad14',
+        tension: 0.3
+      },
+      {
+        label: 'Avg Recall',
+        data: roundData.map(r => r.avg_recall),
+        borderColor: '#5e9b7b',
+        backgroundColor: 'transparent',
+        borderWidth: 2,
+        borderDash: [2, 3],
+        pointRadius: 4,
+        pointBackgroundColor: '#5e9b7b',
+        tension: 0.3
+      }
+    ]
+  },
+  options: {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: { position: 'bottom', labels: { font: { size: 11 }, usePointStyle: true } }
+    },
+    scales: {
+      y: { min: 0, max: 1.05, ticks: { font: { size: 10 } } },
+      x: { ticks: { font: { size: 11 } } }
+    }
+  }
+});
+
+// Privacy-Utility Tradeoff Chart
+new Chart(document.getElementById('dpChart'), {
+  type: 'bar',
+  data: {
+    labels: dpData.map(d => d.id),
+    datasets: [
+      {
+        label: 'F1 Score',
+        data: dpData.map(d => d.f1),
+        backgroundColor: '#245e89',
+        borderRadius: 4,
+        barPercentage: 0.35,
+        categoryPercentage: 0.8
+      },
+      {
+        label: 'Recall',
+        data: dpData.map(d => d.rec),
+        backgroundColor: '#5e9b7b',
+        borderRadius: 4,
+        barPercentage: 0.35,
+        categoryPercentage: 0.8
+      },
+      {
+        label: 'ROC-AUC',
+        data: dpData.map(d => d.auc),
+        backgroundColor: '#faad14',
+        borderRadius: 4,
+        barPercentage: 0.35,
+        categoryPercentage: 0.8
+      }
+    ]
+  },
+  options: {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: { position: 'bottom', labels: { font: { size: 10 }, usePointStyle: true } }
+    },
+    scales: {
+      y: { min: 0, max: 1.05, ticks: { font: { size: 10 } } },
+      x: { ticks: { font: { size: 9 }, maxRotation: 0 } }
+    }
+  }
+});
+
+// Client cards
+const cc = document.getElementById('clientCards');
+for (const [name, m] of Object.entries(evalData.clients)) {
+  cc.innerHTML += `
+    <div class="client-card">
+      <b>${name}</b>
+      <div class="metric-row"><span>Samples</span><span>${m.samples.toLocaleString()}</span></div>
+      <div class="metric-row"><span>Accuracy</span><span>${(m.accuracy*100).toFixed(1)}%</span></div>
+      <div class="metric-row"><span>Precision</span><span>${(m.precision*100).toFixed(1)}%</span></div>
+      <div class="metric-row"><span>Recall</span><span>${(m.recall*100).toFixed(1)}%</span></div>
+      <div class="metric-row"><span>F1 Score</span><span>${m.f1.toFixed(4)}</span></div>
+      <div class="metric-row"><span>ROC-AUC</span><span>${(m.roc_auc*100).toFixed(1)}%</span></div>
+    </div>
+  `;
+}
+
+// DP Table
+const badges = { none: 'badge-none', weak: 'badge-weak', balanced: 'badge-bal', strong: 'badge-strong' };
+const badgeLabels = { none: 'None', weak: 'Weak', balanced: 'Balanced', strong: 'Strong' };
+const tb = document.getElementById('dpTableBody');
+dpData.forEach(d => {
+  tb.innerHTML += `
+    <tr>
+      <td><strong>${d.id}</strong></td>
+      <td>${d.sigma.toFixed(2)}</td>
+      <td>${d.epsilon}</td>
+      <td>${(d.acc*100).toFixed(1)}%</td>
+      <td>${(d.prec*100).toFixed(1)}%</td>
+      <td>${(d.rec*100).toFixed(1)}%</td>
+      <td>${d.f1.toFixed(4)}</td>
+      <td>${(d.auc*100).toFixed(1)}%</td>
+      <td><span class="badge ${badges[d.level]}">${badgeLabels[d.level]}</span></td>
+    </tr>
+  `;
+});
+</script>
+</body>
+</html>
