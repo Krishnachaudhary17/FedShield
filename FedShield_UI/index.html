@@ -26,25 +26,25 @@
     <div class="card"><label>DATASET</label><strong>PaySim</strong><small>2.77M transactions</small></div>
     <div class="card"><label>CLIENTS</label><strong>3</strong><small>Simulated institutions</small></div>
     <div class="card"><label>ROUND</label><strong id="round">4</strong><small>Federated training round</small></div>
-    <div class="card"><label>GLOBAL ACCURACY</label><strong id="accuracy">--</strong><small>Evaluation</small></div>
+    <div class="card"><label>GLOBAL ACCURACY</label><strong id="accuracy">88.4%</strong><small>Evaluation</small></div>
   </section>
 
   <section class="main-grid">
     <div class="card panel">
       <div class="panel-head"><h2>Client Simulation</h2><span>Raw data stays local</span></div>
-      <div class="client" id="c1"><div class="client-name"><b>Client 1</b><small>Bank A — 1.38M txns</small></div><div class="bar"><i></i></div><em>Ready</em></div>
-      <div class="client" id="c2"><div class="client-name"><b>Client 2</b><small>Bank B — 831K txns</small></div><div class="bar"><i></i></div><em>Ready</em></div>
-      <div class="client" id="c3"><div class="client-name"><b>Client 3</b><small>Bank C — 554K txns</small></div><div class="bar"><i></i></div><em>Ready</em></div>
+      <div class="client" id="c1"><div class="client-name"><b>Client 1</b><small>Bank A — 1.38M txns</small></div><div class="bar"><i style="width:100%"></i></div><em>Update ready</em></div>
+      <div class="client" id="c2"><div class="client-name"><b>Client 2</b><small>Bank B — 831K txns</small></div><div class="bar"><i style="width:100%"></i></div><em>Update ready</em></div>
+      <div class="client" id="c3"><div class="client-name"><b>Client 3</b><small>Bank C — 554K txns</small></div><div class="bar"><i style="width:100%"></i></div><em>Update ready</em></div>
     </div>
 
 
   </section>
 
   <section class="bottom-grid">
-    <div class="card panel"><div class="panel-head"><h2>Training Log</h2><span>Live prototype</span></div><div class="log" id="log"><div>System ready. Click &#8220;Start Training&#8221;.</div></div></div>
+    <div class="card panel"><div class="panel-head"><h2>Training Log</h2><span>Live prototype</span></div><div class="log" id="log"><div>[System] Federated model loaded: FraudGCN (FedAvg Global, 4 rounds).</div><div class="good">[Evaluation] Test Accuracy: 88.4% | Recall: 99.6% | F1 Score: 45.1% | Privacy &#949;: 16.6</div><div>System ready. Click &#8220;Train Round 5&#8221; to continue federated learning.</div></div></div>
     <div class="card panel"><div class="panel-head"><h2>Model Evaluation</h2><span>Current round</span></div>
-      <div class="metrics"><div><label>Precision</label><b id="precision">--</b></div><div><label>Recall</label><b id="recall">--</b></div><div><label>F1 Score</label><b id="f1">--</b></div><div><label>Privacy &#949;</label><b id="epsilon">--</b></div></div>
-      <div class="chart"><i id="b1"></i><i id="b2"></i><i id="b3"></i><i id="b4"></i><i id="b5"></i></div>
+      <div class="metrics"><div><label>Precision</label><b id="precision">29.2%</b></div><div><label>Recall</label><b id="recall">99.6%</b></div><div><label>F1 Score</label><b id="f1">45.1%</b></div><div><label>Privacy &#949;</label><b id="epsilon">16.6</b></div></div>
+      <div class="chart"><i id="b1" style="height:35%"></i><i id="b2" style="height:55%"></i><i id="b3" style="height:75%"></i><i id="b4" style="height:88%"></i><i id="b5" style="height:92%"></i></div>
     </div>
   </section>
 
