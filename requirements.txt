@@ -1,0 +1,16 @@
+# FedShield: Privacy-Preserving Federated Fraud Detection
+# Core ML & Deep Learning
+torch>=2.2.0
+torch-geometric>=2.5.0
+
+# Data Science & Numerical Computing
+pandas>=2.1.0
+numpy>=1.26.0
+scikit-learn>=1.4.0
+
+# Graph Analytics & Visualization
+networkx>=3.2.0
+matplotlib>=3.8.0
+
+# Utilities
+tqdm>=4.66.0
